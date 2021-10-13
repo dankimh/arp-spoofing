@@ -227,7 +227,7 @@ void relay_packet(pcap_t* handle,struct User attacker,vector<struct User_pair> &
         ethernet_header=(EthHdr*)packet;
         if(ethernet_header->type_==htons(EthHdr::Arp)){
             cout<<"recv arp packet\n";
-            cout<<string(ethernet_header->smac())<<string(ethernet_header->dmac())<<"\n";
+            cout<<string(ethernet_header->smac())<<" "<<string(ethernet_header->dmac())<<"\n";
             struct ArpHdr* arp_header=(ArpHdr*)(ethernet_header+1);
 
             if(arp_header->op_!=ArpHdr::Request){
@@ -246,9 +246,11 @@ void relay_packet(pcap_t* handle,struct User attacker,vector<struct User_pair> &
         }
 
         else if(ethernet_header->type_==htons(EthHdr::Ip4)){
-            cout<<"recv ip packet\n";
+            struct IpHdr* ip_header=(IpHdr*)(ethernet_header+1);
+            //cout<<"recv ip packet\n";
             for(auto &user_pair:info){
                 if(ethernet_header->smac()==user_pair.sender.mac){
+                    cout<<"relaying packet to "<<string(user_pair.sender.mac)<<" "<<string(ethernet_header->dmac())<<" "<<string(ip_header->ip_src())<<" "<<string(ip_header->ip_dst())<<"\n";
                     EthIpPacket* sending_packet=(EthIpPacket*)packet;
                     sending_packet->eth_.smac_=attacker.mac;
                     sending_packet->eth_.dmac_=user_pair.target.mac;
